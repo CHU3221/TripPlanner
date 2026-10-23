@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "paths": {
+    "connection": {
+      "stroke": "DASHED",
+      "color": null,
+      "directionColor": "#FFFFFF"
+    },
+    "majorTransport": {
+      "stroke": "SOLID",
+      "color": null,
+      "directionColor": "#FFFFFF"
+    },
+    "autoRoute": {
+      "stroke": "SOLID",
+      "color": "#1769E0",
+      "directionColor": "#FFFFFF"
+    }
+  },
+  "markers": {
+    "regular": {
+      "color": null
+    },
+    "waypoint": {
+      "color": null
+    },
+    "searchPreview": {
+      "color": null
+    }
+  }
+}

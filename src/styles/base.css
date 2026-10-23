@@ -1,0 +1,331 @@
+/* =========================================================
+   MATERIAL SYMBOLS
+========================================================= */
+
+@font-face {
+  font-family: 'Material Symbols Rounded';
+
+  src:
+    url('/fonts/MaterialSymbolsRounded.ttf')
+    format('truetype');
+
+  font-style: normal;
+
+  /*
+   * 다운로드한 파일은 variable font.
+   */
+  font-weight: 100 700;
+
+  font-display: block;
+}
+
+.material-symbols-rounded {
+  font-family:
+    'Material Symbols Rounded';
+
+  font-weight: normal;
+  font-style: normal;
+
+  font-size: 20px;
+  line-height: 1;
+
+  letter-spacing: normal;
+  text-transform: none;
+
+  display: inline-block;
+
+  white-space: nowrap;
+  word-wrap: normal;
+
+  direction: ltr;
+
+  font-feature-settings:
+    'liga';
+
+  -webkit-font-feature-settings:
+    'liga';
+
+  -webkit-font-smoothing:
+    antialiased;
+}
+
+
+/* =========================================================
+   VARIABLES
+========================================================= */
+
+:root {
+  --background: #f3f4f5;
+
+  --timeline: #fafafa;
+
+  --route-group:
+    rgba(205, 207, 210, 0.72);
+
+  --route-group-selected:
+    rgba(195, 198, 202, 0.82);
+
+  --visit: #a7e7c7;
+
+  --transport: #84c8f3;
+
+  --text: #171717;
+
+  --muted: #777;
+
+  --grid:
+    rgba(0, 0, 0, 0.085);
+
+  --axis-width: 64px;
+
+  --group-right: 16px;
+
+  --transport-left-inset: 13px;
+  --transport-right: 29px;
+
+  --visit-left-inset: 31px;
+  --visit-right: 46px;
+}
+
+
+/* =========================================================
+   RESET
+========================================================= */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+
+  margin: 0;
+}
+
+body {
+  overflow: hidden;
+
+  color: var(--text);
+
+  background:
+    var(--background);
+
+  font-family:
+    Inter,
+    Pretendard,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+
+  -webkit-font-smoothing:
+    antialiased;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+
+/* =========================================================
+   APP
+========================================================= */
+
+.app {
+  width: 100%;
+  height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  background:
+    var(--background);
+}
+
+
+/* =========================================================
+   TOP BAR
+========================================================= */
+
+.topbar {
+  height: 58px;
+  flex: 0 0 58px;
+
+  padding:
+    0 18px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  background:
+    rgba(255, 255, 255, 0.92);
+
+  border-bottom:
+    1px solid
+    rgba(0, 0, 0, 0.09);
+}
+
+.brand {
+  display: flex;
+
+  align-items: baseline;
+
+  gap: 10px;
+}
+
+.brand strong {
+  font-size: 16px;
+
+  font-weight: 760;
+
+  letter-spacing:
+    -0.02em;
+}
+
+.brand span {
+  color: #8a8a8a;
+
+  font-size: 11px;
+
+  font-weight: 500;
+}
+
+.trip-title {
+  color: #777;
+
+  font-size: 11px;
+
+  font-weight: 550;
+}
+
+
+/* =========================================================
+   WORKSPACE
+========================================================= */
+
+.workspace {
+  flex: 1;
+
+  min-width: 0;
+  min-height: 0;
+
+  display: grid;
+
+  grid-template-columns:
+    410px
+    minmax(360px, 1fr)
+    250px;
+}
+
+
+/* =========================================================
+   TIMELINE VIEWPORT
+========================================================= */
+
+.timeline-viewport {
+  position: relative;
+
+  min-width: 0;
+  min-height: 0;
+
+  overflow: hidden;
+
+  background:
+    var(--timeline);
+
+  border-right:
+    1px solid #ddd;
+}
+
+.planner {
+  width: 100%;
+  height: 100%;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  background:
+    var(--timeline);
+
+  scrollbar-width: none;
+
+  -ms-overflow-style: none;
+}
+
+.planner::-webkit-scrollbar {
+  display: none;
+}
+
+.timeline {
+  position: relative;
+
+  width: 100%;
+
+  min-width: 0;
+}
+
+
+/* =========================================================
+   LAYERS
+========================================================= */
+
+.grid-layer,
+.route-group-layer,
+.connection-layer,
+.event-layer,
+.axis-overlay-layer {
+  position: absolute;
+
+  inset: 0;
+
+  pointer-events: none;
+}
+
+.route-group-layer {
+  z-index: 2;
+}
+
+.grid-layer {
+  z-index: 3;
+}
+
+.connection-layer {
+  z-index: 4;
+}
+
+.event-layer {
+  z-index: 5;
+}
+
+.axis-overlay-layer {
+  z-index: 6;
+}
+
+
+
+/* v0.21 design tokens */
+:root{
+  --surface:#f4f6f4;
+  --surface-elevated:#ffffff;
+  --surface-soft:#f7f9f7;
+  --surface-glass:rgba(249,251,249,.78);
+  --border-subtle:rgba(34,49,40,.09);
+  --border-strong:rgba(34,49,40,.16);
+  --shadow-sm:0 4px 14px rgba(35,48,40,.06);
+  --shadow-md:0 16px 42px rgba(35,48,40,.11);
+  --radius-sm:8px;
+  --radius-md:12px;
+  --radius-lg:18px;
+  --text-primary:#253129;
+  --text-secondary:#657168;
+  --text-muted:#8b958e;
+}

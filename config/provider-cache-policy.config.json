@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "cleanupPollHours": 1,
+  "defaultSafetyMarginHours": 2,
+  "policies": {
+    "GOOGLE.PLACES.PLACE_ID": {
+      "ttlHours": -1,
+      "safetyMarginHours": 0,
+      "refreshAfterHours": 8760,
+      "status": "VERIFIED",
+      "verifiedAt": "2026-10-12",
+      "policyUrl": "https://developers.google.com/maps/documentation/places/web-service/place-id",
+      "notes": "Place IDs are exempt from caching restrictions. Google recommends refreshing IDs older than 12 months."
+    },
+    "GOOGLE.PLACES.POSITION": {
+      "ttlHours": 720,
+      "safetyMarginHours": 2,
+      "status": "VERIFIED",
+      "verifiedAt": "2026-10-12",
+      "policyUrl": "https://cloud.google.com/maps-platform/terms/maps-service-terms",
+      "notes": "Places API latitude/longitude may be cached up to 30 consecutive calendar days. Effective local cache lifetime is shortened by the configured safety margin."
+    },
+    "GOOGLE.PLACES.NAME": {
+      "ttlHours": 0,
+      "status": "CONSERVATIVE",
+      "verifiedAt": "2026-10-12",
+      "policyUrl": "https://developers.google.com/maps/documentation/places/web-service/policies",
+      "notes": "Fail-closed default. Places content must not be cached/stored beyond explicit exceptions. Change only after verifying the exact API/content permission."
+    },
+    "GOOGLE.PLACES.ADDRESS": {
+      "ttlHours": 0,
+      "status": "CONSERVATIVE",
+      "verifiedAt": "2026-10-12",
+      "policyUrl": "https://developers.google.com/maps/documentation/places/web-service/policies",
+      "notes": "Fail-closed default for Places API content. Do not infer permissions from a different Google API such as Geocoding or Address Validation."
+    },
+    "GOOGLE.PLACES.DETAILS": {
+      "ttlHours": 0,
+      "status": "CONSERVATIVE",
+      "verifiedAt": "2026-10-12",
+      "policyUrl": "https://developers.google.com/maps/documentation/places/web-service/policies",
+      "notes": "Fail-closed umbrella key. Prefer field-specific keys when a verified exception exists."
+    },
+    "GOOGLE.PLACES.PHOTO": {
+      "ttlHours": 0,
+      "status": "CONSERVATIVE",
+      "verifiedAt": "2026-10-12",
+      "policyUrl": "https://developers.google.com/maps/documentation/places/web-service/policies"
+    },
+    "GOOGLE.PLACES.REVIEW": {
+      "ttlHours": 0,
+      "status": "CONSERVATIVE",
+      "verifiedAt": "2026-10-12",
+      "policyUrl": "https://developers.google.com/maps/documentation/places/web-service/policies"
+    },
+    "NAVER.LOCAL_SEARCH.RESULT": {
+      "ttlHours": 0,
+      "status": "UNVERIFIED",
+      "notes": "Fail closed until the exact NAVER Local Search storage/caching terms are reviewed and recorded here."
+    },
+    "NAVER.GEOCODING.RESULT": {
+      "ttlHours": 0,
+      "status": "UNVERIFIED",
+      "notes": "Fail closed until the exact NAVER Geocoding storage/caching terms are reviewed and recorded here."
+    },
+    "NAVER.DIRECTIONS5.RESULT": {
+      "ttlHours": 0,
+      "status": "UNVERIFIED",
+      "notes": "Current TripPlanner policy already keeps route geometry/metrics transient. Keep ttlHours=0 unless explicit storage permission is verified."
+    }
+  }
+}

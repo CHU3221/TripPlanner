@@ -1,0 +1,985 @@
+/* =========================================================
+   HOUR GRID
+========================================================= */
+
+.hour-line {
+  position: absolute;
+
+  left: 0;
+  right: 0;
+
+  display: grid;
+
+  grid-template-columns:
+    var(--axis-width)
+    minmax(0, 1fr);
+
+  pointer-events: none;
+}
+
+.hour-line > span {
+  position: relative;
+
+  top: -7px;
+
+  padding-right: 10px;
+
+  color: #777;
+
+  font-size: 11px;
+  font-weight: 500;
+
+  text-align: right;
+
+  white-space: nowrap;
+}
+
+.hour-line > div {
+  height: 1px;
+
+  background:
+    var(--grid);
+}
+
+
+/* =========================================================
+   DATE
+========================================================= */
+
+.date-marker {
+  position: absolute;
+
+  left: 0;
+
+  width:
+    var(--axis-width);
+
+  padding-right: 10px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: flex-end;
+
+  pointer-events: none;
+}
+
+.date-marker strong,
+.collapse-date strong {
+  color: #444;
+
+  font-size: 12px;
+
+  font-weight: 750;
+
+  line-height: 1;
+
+  white-space: nowrap;
+}
+
+.date-marker span,
+.collapse-date span {
+  margin-top: 4px;
+
+  color: #888;
+
+  font-size: 10px;
+
+  font-weight: 550;
+
+  line-height: 1;
+}
+
+
+/* =========================================================
+   COLLAPSED AXIS
+========================================================= */
+
+.collapsed-axis {
+  position: absolute;
+
+  left: 0;
+
+  width:
+    var(--axis-width);
+
+  pointer-events: none;
+}
+
+.collapse-arrow {
+  position: absolute;
+
+  right: 14px;
+
+  color: #929292;
+
+  font-size: 8px;
+
+  line-height: 1;
+}
+
+.collapse-arrow-top {
+  top: 18px;
+}
+
+.collapse-arrow-bottom {
+  bottom: 18px;
+}
+
+.collapse-date {
+  position: absolute;
+
+  top: 50%;
+  right: 10px;
+
+  transform:
+    translateY(-50%);
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: flex-end;
+}
+
+.axis-stamp {
+  position: absolute;
+
+  left: 0;
+
+  width:
+    var(--axis-width);
+
+  padding-right: 9px;
+
+  color: #555;
+
+  font-size: 10px;
+
+  font-weight: 650;
+
+  line-height: 12px;
+
+  text-align: right;
+
+  white-space: nowrap;
+
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   ROUTE GROUP
+========================================================= */
+
+.route-group {
+  position: absolute;
+
+  left:
+    var(--axis-width);
+
+  right:
+    var(--group-right);
+
+  padding: 0;
+
+  overflow: visible;
+
+  background:
+    var(--route-group);
+
+  border:
+    1px solid
+    rgba(0, 0, 0, 0.10);
+
+  border-radius: 26px;
+
+  pointer-events: auto;
+
+  cursor: pointer;
+
+  appearance: none;
+
+  transition:
+    background 120ms ease,
+    border-color 120ms ease;
+}
+
+.route-group:hover {
+  border-color:
+    rgba(0, 0, 0, 0.15);
+}
+
+.route-group.selected {
+  background:
+    var(--route-group-selected);
+
+  border-color:
+    rgba(0, 0, 0, 0.14);
+}
+
+.route-group-label {
+  position: absolute;
+
+  top: 50%;
+  left: 12px;
+
+  transform:
+    translate(
+      -50%,
+      -50%
+    )
+    rotate(-90deg);
+
+  color:
+    rgba(0, 0, 0, 0.54);
+
+  font-size: 10px;
+
+  font-weight: 700;
+
+  letter-spacing:
+    0.08em;
+
+  white-space: nowrap;
+
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   VISIT
+========================================================= */
+
+.visit {
+  position: absolute;
+
+  left:
+    calc(
+      var(--axis-width) +
+      var(--visit-left-inset)
+    );
+
+  right:
+    var(--visit-right);
+
+  min-height: 0;
+  box-sizing: border-box;
+
+  overflow: hidden;
+
+  background:
+    var(--visit);
+
+  border:
+    1px solid
+    rgba(0, 0, 0, 0.13);
+
+  border-radius: 16px;
+
+  box-shadow:
+    0 2px 5px
+    rgba(0, 0, 0, 0.07);
+
+  pointer-events: auto;
+
+  cursor: grab;
+
+  user-select: none;
+
+  touch-action: none;
+
+  z-index: 2;
+
+  will-change: box-shadow;
+
+  transition:
+    box-shadow 100ms ease;
+}
+
+.visit:hover {
+  box-shadow:
+    0 3px 8px
+    rgba(0, 0, 0, 0.10);
+}
+
+.visit.dragging {
+  z-index: 20;
+
+  cursor: grabbing;
+
+  box-shadow:
+    0 7px 18px
+    rgba(0, 0, 0, 0.17);
+}
+
+
+/* =========================================================
+   NORMAL VISIT CONTENT
+========================================================= */
+
+.visit-content {
+  position: absolute;
+
+  inset: 0;
+
+  padding:
+    9px 13px;
+
+  overflow: hidden;
+
+  display: flex;
+
+  flex-direction: column;
+}
+
+.visit-time {
+  color:
+    rgba(0, 0, 0, 0.52);
+
+  font-size: 10px;
+
+  font-weight: 500;
+
+  white-space: nowrap;
+}
+
+.visit-content strong {
+  margin-top: 3px;
+
+  min-width: 0;
+
+  overflow: hidden;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+.visit-content small {
+  margin-top: 5px;
+
+  overflow: hidden;
+
+  color:
+    rgba(0, 0, 0, 0.58);
+
+  font-size: 11px;
+
+  line-height: 1.3;
+}
+
+
+.visit-condensed-content {
+  position: absolute;
+  inset: 0;
+  padding: 0 11px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+}
+.visit-condensed-content span { font-size: 9px; color: rgba(0,0,0,.52); white-space: nowrap; }
+.visit-condensed-content strong { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; }
+
+/* =========================================================
+   COMPACT VISIT
+========================================================= */
+
+.visit.compact {
+  border-radius: 13px;
+}
+
+.visit-compact-content {
+  position: absolute;
+
+  inset: 0;
+
+  padding:
+    0 8px
+    0 11px;
+
+  display: grid;
+
+  grid-template-columns: minmax(0, 1fr);
+
+  align-items: center;
+
+  gap: 4px;
+}
+
+.visit-compact-time {
+  color:
+    rgba(0, 0, 0, 0.56);
+
+  font-size: 10px;
+
+  font-weight: 600;
+
+  white-space: nowrap;
+}
+
+.visit-compact-content > strong {
+  min-width: 0;
+
+  overflow: hidden;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+.visit-detail-button {
+  width: 24px;
+  height: 24px;
+
+  padding: 0;
+
+  display: grid;
+
+  place-items: center;
+
+  color:
+    rgba(0, 0, 0, 0.52);
+
+  background:
+    transparent;
+
+  border: 0;
+
+  border-radius: 50%;
+
+  cursor: pointer;
+
+  pointer-events: auto;
+}
+
+.visit-detail-button:hover {
+  background:
+    rgba(0, 0, 0, 0.07);
+}
+
+.visit-detail-button
+.material-symbols-rounded {
+  font-size: 18px;
+}
+
+
+/* =========================================================
+   RESIZE ZONES
+========================================================= */
+
+.resize-zone {
+  position: absolute;
+
+  z-index: 10;
+
+  left: 8px;
+  right: 8px;
+
+  height: 6px;
+
+  cursor: ns-resize;
+
+  touch-action: none;
+}
+
+.resize-zone.top {
+  top: 0;
+}
+
+.resize-zone.bottom {
+  bottom: 0;
+}
+
+
+/* =========================================================
+   CONNECTION
+========================================================= */
+
+.route-connection {
+  position: absolute;
+
+  left:
+    calc(
+      var(--axis-width) +
+      var(--visit-left-inset)
+    );
+
+  width: 138px;
+
+  pointer-events: none;
+}
+
+.travel-segment,
+.buffer-segment {
+  position: relative;
+
+  width: 100%;
+}
+
+.travel-line,
+.buffer-line {
+  position: absolute;
+
+  top: 0;
+  bottom: 0;
+
+  left: 23px;
+
+  width: 0;
+}
+
+.travel-line {
+  border-left:
+    2px solid
+    rgba(0, 0, 0, 0.40);
+}
+
+.buffer-line {
+  border-left:
+    2px dashed
+    rgba(0, 0, 0, 0.23);
+}
+
+
+/* =========================================================
+   CONNECTION STUB
+========================================================= */
+
+.connection-stub {
+  position: absolute;
+
+  left: 23px;
+
+  width: 13px;
+  height: 1px;
+
+  background:
+    rgba(0, 0, 0, 0.30);
+}
+
+.connection-stub-top {
+  top: 0;
+}
+
+.connection-stub-bottom {
+  bottom: 0;
+}
+
+
+/* =========================================================
+   CONNECTION LABEL
+========================================================= */
+
+.travel-label,
+.buffer-label {
+  position: absolute;
+
+  left: 37px;
+
+  padding:
+    2px 6px;
+
+  color: #555;
+
+  background:
+    rgba(
+      250,
+      250,
+      250,
+      0.88
+    );
+
+  border-radius: 7px;
+
+  font-size: 10px;
+
+  font-weight: 500;
+
+  white-space: nowrap;
+}
+
+.travel-label {
+  top: 50%;
+
+  transform:
+    translateY(-50%);
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 3px;
+}
+
+.connection-icon {
+  font-size: 13px;
+}
+
+.buffer-label {
+  top: 50%;
+
+  transform:
+    translateY(-50%);
+
+  color:
+    rgba(0, 0, 0, 0.48);
+}
+
+
+/* =========================================================
+   CONNECTION CONFLICT
+========================================================= */
+
+.route-connection.conflict
+.travel-line {
+  border-left-style:
+    dashed;
+}
+
+.route-connection.conflict
+.travel-label {
+  font-weight: 700;
+}
+
+.conflict-label {
+  position: absolute;
+
+  left: 37px;
+
+  bottom: 2px;
+
+  padding:
+    2px 6px;
+
+  color:
+    rgba(0, 0, 0, 0.72);
+
+  background:
+    rgba(
+      250,
+      250,
+      250,
+      0.92
+    );
+
+  border-radius: 7px;
+
+  font-size: 10px;
+
+  font-weight: 750;
+
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   MAJOR TRANSPORT
+========================================================= */
+
+.major-transport {
+  position: absolute;
+
+  z-index: 1;
+
+  left:
+    calc(
+      var(--axis-width) +
+      var(--transport-left-inset)
+    );
+
+  right:
+    var(--transport-right);
+
+  overflow: hidden;
+
+  background:
+    var(--transport);
+
+  border:
+    1px solid
+    rgba(0, 0, 0, 0.14);
+
+  border-radius: 28px;
+
+  box-shadow:
+    0 4px 10px
+    rgba(0, 0, 0, 0.08);
+
+  pointer-events: auto;
+}
+
+.transport-zone {
+  position: absolute;
+
+  left: 18px;
+  right: 18px;
+
+  min-width: 0;
+
+  display: flex;
+
+  flex-direction: column;
+}
+
+
+/* =========================================================
+   TRANSPORT DEPARTURE
+========================================================= */
+
+.departure-zone {
+  top: 16px;
+
+  min-height: 56px;
+
+  align-items: flex-start;
+}
+
+
+/* =========================================================
+   TRANSPORT ARRIVAL
+========================================================= */
+
+.arrival-zone {
+  bottom: 16px;
+
+  min-height: 56px;
+
+  justify-content: flex-end;
+
+  align-items: flex-start;
+}
+
+.transport-zone strong {
+  max-width: 100%;
+
+  overflow: hidden;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+}
+
+.transport-zone small {
+  margin-top: 4px;
+
+  color:
+    rgba(0, 0, 0, 0.60);
+
+  font-size: 10px;
+
+  font-weight: 500;
+
+  line-height: 1.3;
+}
+
+
+/* =========================================================
+   TRANSPORT ONBOARD
+========================================================= */
+
+.onboard-zone {
+  top: 50%;
+  left: 50%;
+  right: auto;
+
+  transform:
+    translate(
+      -50%,
+      -50%
+    );
+
+  align-items: center;
+
+  text-align: center;
+}
+
+.transport-icon {
+  font-size: 23px;
+
+  line-height: 1;
+}
+
+.onboard-zone strong {
+  margin-top: 7px;
+
+  font-size: 14px;
+
+  font-weight: 750;
+
+  white-space: nowrap;
+}
+
+.transport-route {
+  margin-top: 5px;
+
+  color:
+    rgba(0, 0, 0, 0.58);
+
+  font-size: 11px;
+
+  font-weight: 500;
+
+  white-space: nowrap;
+}
+
+.transport-operation-time {
+  color:
+    rgba(0, 0, 0, 0.56);
+
+  font-size: 10px;
+
+  font-weight: 600;
+
+  line-height: 1;
+
+  white-space: nowrap;
+}
+
+.transport-operation-time
++ .transport-icon {
+  margin-top: 7px;
+}
+
+.transport-operation-time.arrival {
+  margin-top: 7px;
+}
+
+
+
+/* Lifted Visit preview. The Timeline still owns the provisional time placement;
+   this fixed ghost only communicates that the Visit can leave the time axis. */
+.visit.dragging {
+  transition: transform 70ms ease-out, opacity 90ms ease-out, box-shadow 90ms ease-out;
+}
+
+/* While attached, the real Visit remains the rail placement preview. */
+.visit.dragging:not(.free-placeholder) {
+  box-shadow: 0 5px 14px rgba(0, 0, 0, .10);
+}
+
+/* After POP the real Visit becomes the single Timeline destination placeholder. */
+.visit.dragging.free-placeholder {
+  opacity: .24;
+  border-style: dashed;
+  box-shadow: none;
+}
+
+.visit-drag-ghost {
+  position: fixed;
+  z-index: 1000;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--visit);
+  border: 1px solid rgba(0, 0, 0, .16);
+  border-radius: 16px;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, .22);
+  transform: rotate(.5deg) scale(1);
+  transition: transform 90ms ease-out, box-shadow 90ms ease-out;
+  opacity: .96;
+}
+
+.visit-drag-ghost strong,
+.visit-drag-ghost small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.visit-drag-ghost strong { font-size: 12px; }
+.visit-drag-ghost small { margin-top: 4px; font-size: 10px; opacity: .62; }
+
+.visit-drag-ghost.just-popped { animation: visit-pop 110ms ease-out; }
+@keyframes visit-pop { 0% { transform: rotate(.5deg) scale(.97); } 45% { transform: rotate(.5deg) scale(1.045); } 100% { transform: rotate(.5deg) scale(1); } }
+.visit-drag-ghost.target-timeline { box-shadow: 0 12px 30px rgba(0,0,0,.20), 0 0 0 2px rgba(65,105,225,.12); }
+.visit-drag-ghost.target-bucket { box-shadow: 0 12px 30px rgba(0,0,0,.20), 0 0 0 2px rgba(30,140,90,.14); }
+
+/* Map hover/selection is relationship feedback only; it does not alter placement geometry. */
+.visit.map-related:not(.dragging){box-shadow:0 0 0 2px rgba(49,95,69,.22),0 6px 16px rgba(0,0,0,.08)}
+
+/* 4.4 collapse readability. Boundary stamps are the exact configured times;
+   full-hour grid labels inside the compressed range are suppressed in TS. */
+.collapsed-axis { min-height: 180px; }
+.axis-stamp-start { transform: translateY(-4px); }
+.axis-stamp-end { transform: translateY(4px); }
+.major-transport.transport-compact {
+  border-radius: 14px;
+}
+.transport-compact-content {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  padding: 2px 8px;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: auto minmax(0,1fr) auto;
+  align-items: center;
+  gap: 7px;
+}
+.transport-compact-content .transport-icon { font-size: 14px; }
+.transport-compact-content strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  line-height: 1;
+}
+.transport-compact-time {
+  color: rgba(0,0,0,.58);
+  font-size: 9px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.major-transport.transport-micro .transport-compact-content { grid-template-columns:minmax(0,1fr) auto; gap:5px; }
+.major-transport.transport-micro .transport-icon { display:none; }
+
+/* =========================================================
+   4.4.1 — DATE BOUNDARY / TRANSPORT EDIT AFFORDANCE
+========================================================= */
+.date-boundary {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.date-boundary .date-marker {
+  top: -16px;
+}
+.date-boundary-rule {
+  position: absolute;
+  left: var(--axis-width);
+  right: 0;
+  top: 0;
+  height: 1px;
+  background: rgba(0,0,0,.16);
+}
+
+
+/* devpack13 — information-dense Visit cards */
+.visit-time-row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0}
+.visit-time-row .visit-time{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.visit-duration{flex:0 0 auto;color:rgba(0,0,0,.5);font-size:10px;font-weight:700;white-space:nowrap}
+.visit-content small{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.35}
+.visit-condensed-content{grid-template-columns:auto minmax(0,1fr) auto}
+.visit-condensed-content em{color:rgba(0,0,0,.46);font-size:9px;font-style:normal;font-weight:700;white-space:nowrap}

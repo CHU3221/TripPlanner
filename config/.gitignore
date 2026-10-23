@@ -1,0 +1,4 @@
+# Server/operator-specific cache policy override. Keep the checked-in example only.
+provider-cache-policy.override.json
+provider-cache-policy.override.*.json
+!provider-cache-policy.override.example.json

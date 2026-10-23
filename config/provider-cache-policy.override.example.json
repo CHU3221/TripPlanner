@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "cleanupPollHours": 1,
+  "defaultSafetyMarginHours": 2,
+  "allowCrossTripCacheReuse": false,
+  "policies": {
+    "GOOGLE.PLACES.PLACE_ID": { "ttlHours": -1, "safetyMarginHours": 0, "retentionHours": -1 },
+    "GOOGLE.PLACES.POSITION": { "ttlHours": 360, "retentionHours": 720 },
+    "GOOGLE.PLACES.NAME": { "ttlHours": 0, "retentionHours": 0 },
+    "GOOGLE.PLACES.ADDRESS": { "ttlHours": 0, "retentionHours": 0 },
+    "GOOGLE.PLACES.DETAILS": { "ttlHours": 0, "retentionHours": 0 },
+    "GOOGLE.PLACES.PHOTO": { "ttlHours": 0, "retentionHours": 0 },
+    "GOOGLE.PLACES.REVIEW": { "ttlHours": 0, "retentionHours": 0 },
+    "NAVER.LOCAL_SEARCH.RESULT": { "ttlHours": 0, "retentionHours": 0 },
+    "NAVER.GEOCODING.RESULT": { "ttlHours": 0, "retentionHours": 0 },
+    "NAVER.DIRECTIONS5.RESULT": { "ttlHours": 0, "retentionHours": 0 }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "name": "trip-planner",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "test:naver": "node tests/run-naver-final-tests.mjs",
+    "test:core": "node tests/run-pre-google-core-tests.mjs",
+    "test:google": "node tests/run-google-adapter-tests.mjs",
+    "test:devpack10": "node tests/run-devpack10-route-mode-tests.mjs",
+    "test": "npm run test:naver && npm run test:core && npm run test:google && npm run test:devpack10 && npm run test:devpack10-1 && npm run test:devpack11 && npm run test:persistence && npm run test:devpack12-1 && npm run test:devpack13 && npm run test:devpack14 && npm run test:devpack15 && npm run test:devpack16 && npm run test:devpack17 && npm run test:devpack18 && npm run test:devpack19 && npm run test:devpack20 && npm run test:devpack21 && npm run test:devpack21-1 && npm run test:devpack22 && npm run test:devpack23 && npm run test:devpack24 && npm run test:release",
+    "test:devpack10-1": "node tests/run-devpack10-1-transit-tests.mjs",
+    "test:devpack11": "node tests/run-devpack11-visual-tests.mjs",
+    "server": "node server/index.mjs",
+    "dev:full": "node scripts/dev.mjs",
+    "test:persistence": "node tests/run-devpack12-persistence-tests.mjs",
+    "test:devpack12-1": "node tests/run-devpack12-1-closeout-tests.mjs",
+    "test:devpack13": "node tests/run-devpack13-ux-tests.mjs",
+    "test:devpack14": "node tests/run-devpack14-auth-settings-tests.mjs",
+    "test:devpack15": "node tests/run-devpack15-access-map-i18n-tests.mjs",
+    "test:devpack16": "node tests/run-devpack16-cache-runtime-tests.mjs && node tests/run-devpack16-hydration-cache-tests.mjs",
+    "test:devpack17": "node tests/run-devpack17-map-ui-tests.mjs",
+    "test:devpack18": "node tests/run-devpack18-release-candidate-tests.mjs",
+    "test:devpack19": "node tests/run-devpack19-polish-tests.mjs",
+    "test:devpack20": "node tests/run-devpack20-presentation-connection-tests.mjs",
+    "test:devpack21": "node tests/run-devpack21-release-polish-tests.mjs",
+    "test:devpack21-1": "node tests/run-devpack21-1-drag-ux-tests.mjs",
+    "test:devpack22": "node tests/run-devpack22-material-visit-capture-tests.mjs",
+    "test:devpack23": "node tests/run-devpack23-layout-attachments-tests.mjs",
+    "test:devpack24": "node tests/run-devpack24-release-cleanup-tests.mjs",
+    "test:release": "node tests/run-release-1.0.0-tests.mjs"
+  },
+  "dependencies": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "oxlint": "^1.81.0",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.0"
+  }
+}
