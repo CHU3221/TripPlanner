@@ -33,7 +33,7 @@
     "test:devpack23": "node tests/run-devpack23-layout-attachments-tests.mjs",
     "test:devpack24": "node tests/run-devpack24-release-cleanup-tests.mjs",
     "test:release": "node tests/run-release-1.0.0-tests.mjs",
-    "test:route-cache": "node tests/run-route-cache-pipeline-tests.mjs"
+    "test:route-cache": "node tests/run-route-cache-pipeline-tests.mjs && node tests/run-route-cache-reorder-tests.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",
