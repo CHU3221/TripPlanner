@@ -12,7 +12,7 @@
     "test:core": "node tests/run-pre-google-core-tests.mjs",
     "test:google": "node tests/run-google-adapter-tests.mjs",
     "test:devpack10": "node tests/run-devpack10-route-mode-tests.mjs",
-    "test": "npm run test:naver && npm run test:core && npm run test:google && npm run test:devpack10 && npm run test:devpack10-1 && npm run test:devpack11 && npm run test:persistence && npm run test:devpack12-1 && npm run test:devpack13 && npm run test:devpack14 && npm run test:devpack15 && npm run test:devpack16 && npm run test:devpack17 && npm run test:devpack18 && npm run test:devpack19 && npm run test:devpack20 && npm run test:devpack21 && npm run test:devpack21-1 && npm run test:devpack22 && npm run test:devpack23 && npm run test:devpack24 && npm run test:release",
+    "test": "npm run test:naver && npm run test:core && npm run test:google && npm run test:devpack10 && npm run test:devpack10-1 && npm run test:devpack11 && npm run test:persistence && npm run test:devpack12-1 && npm run test:devpack13 && npm run test:devpack14 && npm run test:devpack15 && npm run test:devpack16 && npm run test:devpack17 && npm run test:devpack18 && npm run test:devpack19 && npm run test:devpack20 && npm run test:devpack21 && npm run test:devpack21-1 && npm run test:devpack22 && npm run test:devpack23 && npm run test:devpack24 && npm run test:release && npm run test:route-cache",
     "test:devpack10-1": "node tests/run-devpack10-1-transit-tests.mjs",
     "test:devpack11": "node tests/run-devpack11-visual-tests.mjs",
     "server": "node server/index.mjs",
@@ -32,7 +32,8 @@
     "test:devpack22": "node tests/run-devpack22-material-visit-capture-tests.mjs",
     "test:devpack23": "node tests/run-devpack23-layout-attachments-tests.mjs",
     "test:devpack24": "node tests/run-devpack24-release-cleanup-tests.mjs",
-    "test:release": "node tests/run-release-1.0.0-tests.mjs"
+    "test:release": "node tests/run-release-1.0.0-tests.mjs",
+    "test:route-cache": "node tests/run-route-cache-pipeline-tests.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",

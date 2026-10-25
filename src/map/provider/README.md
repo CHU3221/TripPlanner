@@ -140,7 +140,7 @@ Runtime results:
 - are not copied into Connection user metadata
 - are reused only when their request key still matches current endpoint coordinates/mode
 - may survive Undo/Redo in SPA memory, but become visible only when persistent Route Intent is `ROUTE_API`
-- disappear on reload/new session
+- disappear on reload/new session when route caching is disabled (`ttlHours=0`); enabled cache entries may be restored without provider I/O
 
 Undo/Redo operates on persistent `ConnectionPlan` changes only. Redo never triggers a provider API call automatically.
 
@@ -197,3 +197,23 @@ Connection automatic-route UI consumes the existing provider-neutral `RouteMode`
 - Runtime geometry/duration/distance/summary/candidates remain session-only and are never stored in Connection History or canonical persistence.
 - Provider-specific waypoint rules remain adapter validation. The UI no longer hardcodes NAVER's five-waypoint limit.
 - Transit detail legs/transfers/times are not added to Core persistence in devpack10; only fields representable by current `RouteCandidate` are shown.
+
+### Route response cache (optional)
+
+`GOOGLE.ROUTES.RESULT` and `NAVER.DIRECTIONS5.RESULT` have independent, trip-scoped-by-default SQLite cache policies.
+The operator config defaults to `ttlHours=0, retentionHours=0`, preserving the original
+in-memory-only behavior. With `ttlHours=-1, retentionHours=-1` cache entries are kept
+indefinitely; positive TTL uses effective TTL (`ttlHours - safetyMarginHours`) and the
+configured retention window. Disabling the route cache sets retention to zero and
+purges existing stored route responses when the admin policy is saved.
+
+Explicit route searches read the cache first. On miss they invoke the existing provider
+and write normalized `RouteCandidate[]` to the cache. Saving a connection preserves only
+the selected candidate's opaque ID in `routeIntent.option` (no provider geometry in the
+Trip snapshot). On reopening a Trip, the selected candidate can be hydrated from SQLite
+without calling Google or NAVER; no auto-fetch happens on a cache miss.
+
+**Usage restrictions:** Route responses from actual providers may have storage limits.
+Caching is disabled by default. Use permanent mode only for independently generated
+mock data or when the provider's applicable terms permit such retention. Do not point
+both mock and live adapters at the same cache namespace while testing.

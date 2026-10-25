@@ -12,7 +12,7 @@ import { readTimelineDropPayload, TIMELINE_DROP_MIME } from '../timelineDrop'
 import type { TimelineDropPayload } from '../timelineDrop'
 import type { TripPlace } from '../domain/place'
 import type { RouteRuntimeResult } from '../connectionRuntime'
-import { routeRequestKey, savedConnectionRouteRequest } from '../connectionRuntime'
+import { routeRuntimeMatches, savedConnectionRouteRequest } from '../connectionRuntime'
 import { routeModeIcon } from '../routeSearchUi'
 import { dayColor, visualColor, type TripDayColors } from '../visual/appearance'
 import { DateTextInput, TimeTextInput, isValidDateText, parseTimeText } from './DateTimeInput'
@@ -120,7 +120,7 @@ export function Timeline({ visits, setVisits, transports, places, labels, setLab
     for(const pair of pairs){
       const request=savedConnectionRouteRequest(pair,places,plans[pair.key])
       const runtime=routeRuntime[pair.key]
-      if(request&&runtime?.requestKey===routeRequestKey(request))next[pair.key]=runtime
+      if(request&&routeRuntimeMatches(runtime,request,plans[pair.key]?.routeIntent?.option))next[pair.key]=runtime
     }
     return next
   },[pairs,places,plans,routeRuntime])

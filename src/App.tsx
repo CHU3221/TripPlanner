@@ -23,7 +23,7 @@ import type { TripMapRoute } from './map/provider/composition'
 import type { MapPoiSelection, PlaceCandidate, RouteCandidate, RouteMode, RouteRequest } from './map/provider/contract'
 import type { MapPathTarget } from './map/mapConnectionPrimitives'
 import type { RouteRuntimeResult } from './connectionRuntime'
-import { routeRequestKey, savedConnectionRouteRequest } from './connectionRuntime'
+import { routeRequestKey, routeRuntimeMatches, savedConnectionRouteRequest, savedRouteCacheRequests } from './connectionRuntime'
 import { connectionDraftFromSegments, normalizeConnectionDraft, normalizeConnectionSegments } from './connectionWaypoints'
 import { materializeNewPlaceChoice } from './placeDraft'
 import { DEFAULT_TRIP_APPEARANCE, dayColor, updateDayColor, type TripAppearanceSettings, type TripDayColors } from './visual/appearance'
@@ -32,7 +32,7 @@ import { HttpTripSnapshotRepository, TripRevisionConflictError } from './persist
 import type { TripSummary } from './persistence/httpTripRepository'
 import { createTripSnapshot, refreshMajorTransportPlaceProjection, restoreTripSnapshot } from './persistence/snapshotCodec'
 import { hydrateProviderPlaces, refreshProviderPlacePositions } from './persistence/providerHydration'
-import { primeGooglePlacePositionCache } from './providerData/httpProviderCache'
+import { primeGooglePlacePositionCache, readRouteCandidatesCache, writeRouteCandidatesCache } from './providerData/httpProviderCache'
 import { DEFAULT_TRIP_MAP_SETTINGS, MAX_CONNECTION_WIDTH_PX, MIN_CONNECTION_WIDTH_PX, normalizeConnectionWidthPx, type TripMapSettings } from './map/tripMapSettings'
 import { authApi, type AuthStatus, type ManagedUser, type RuntimeConfig, type TripAccessConfig } from './authApi'
 import { text } from './i18n/catalog'
@@ -70,7 +70,8 @@ const tripRepository=new HttpTripSnapshotRepository()
 
 function TripEditor({tripRoute,runtimeConfig,auth}:{tripRoute:TripMapRoute;runtimeConfig:RuntimeConfig;auth:Extract<AuthStatus,{authenticated:true}>}){
  setTelemetryTrip(tripRoute.tripId)
- const {naverClientId,googleApiKey,googleMapId,providerCache={googlePlacesPositionTtlHours:0}}=runtimeConfig
+ const {naverClientId,googleApiKey,googleMapId,providerCache={googlePlacesPositionTtlHours:0,googleRoutesResultTtlHours:0,naverDirectionsResultTtlHours:0}}=runtimeConfig
+ const routeCacheTtlHours=tripRoute.mapProvider==='GOOGLE'?(providerCache.googleRoutesResultTtlHours??0):(providerCache.naverDirectionsResultTtlHours??0)
  const requestedMapProvider=tripRoute.mapProvider
  const mapProvider=useMemo(()=>createTripMapProvider(requestedMapProvider,{naverClientId,googleApiKey,googleMapId}),[requestedMapProvider,naverClientId,googleApiKey,googleMapId])
  const [tripName,setTripName]=useState('')
@@ -133,6 +134,21 @@ function TripEditor({tripRoute,runtimeConfig,auth}:{tripRoute:TripMapRoute;runti
  const [mapFocusRequest,setMapFocusRequest]=useState<{placeId:string;requestId:number}|null>(null)
  const [placeSearchPreview,setPlaceSearchPreview]=useState<PlaceCandidate|null>(null)
 
+ async function restoreSavedRoutes(savedPlans:Record<string,ConnectionPlan>,savedVisits:VisitData[],savedTransports:MajorTransportData[],savedPlaces:TripPlace[]){
+   if(routeCacheTtlHours===0)return {}
+   const requests=savedRouteCacheRequests(savedPlans,savedVisits,savedTransports,savedPlaces,tripRoute.mapProvider)
+   const entries=await Promise.all(requests.map(async ({pairId,request,option})=>{
+     try{
+       const cached=await readRouteCandidatesCache(tripRoute.tripId,tripRoute.mapProvider,request)
+       if(!cached.hit||!Array.isArray(cached.value))return null
+       const route=option?cached.value.find(candidate=>candidate.id===option):cached.value[0]
+       return route&&route.mode===request.mode?{pairId,result:{requestKey:routeRequestKey(request),request,route}}:null
+     }catch{return null} // Cache failures may not block opening the Trip.
+   }))
+   return Object.fromEntries(entries.filter((entry):entry is NonNullable<typeof entry>=>!!entry).map(({pairId,result})=>[pairId,result]))
+ }
+
+
  useEffect(()=>{placesRef.current=places},[places])
  useEffect(()=>{setTelemetryTrip(tripRoute.tripId);return()=>setTelemetryTrip(null)},[tripRoute.tripId])
  useEffect(()=>{document.body.classList.toggle('capture-document-mode',captureMode);return()=>document.body.classList.remove('capture-document-mode')},[captureMode])
@@ -160,9 +176,11 @@ function TripEditor({tripRoute,runtimeConfig,auth}:{tripRoute:TripMapRoute;runti
        setTransports(current=>current.map(transport=>refreshMajorTransportPlaceProjection(transport,hydrated.places)))
      }
      if(hydrated.failedPlaceIds.length)setHydrationWarning(text.errors.providerMetadataPartial(hydrated.failedPlaceIds.length))
+     const restoredRoutes=await restoreSavedRoutes(restored.plans,restored.visits,restored.transports,hydrated.places)
+     if(!cancelled)setRouteRuntime(restoredRoutes)
    }).catch(error=>{if(cancelled)return;setStorageError(error instanceof Error?error.message:text.errors.tripLoadFailed);setLoadState('ERROR')})
    return()=>{cancelled=true}
- },[tripRoute.tripId,tripRoute.mapProvider,googleApiKey,providerCache.googlePlacesPositionTtlHours])
+ },[tripRoute.tripId,tripRoute.mapProvider,googleApiKey,providerCache.googlePlacesPositionTtlHours,routeCacheTtlHours])
 
  const currentSnapshot=useMemo(()=>createTripSnapshot({tripId:tripRoute.tripId,name:tripName||text.tripHome.untitled,mapProvider:tripRoute.mapProvider,places,regions,visits,bucketItems,bases,transports,labels,plans,timelineView,dayColors,mapSettings,appearanceSettings}),[tripRoute.tripId,tripRoute.mapProvider,tripName,places,regions,visits,bucketItems,bases,transports,labels,plans,timelineView,dayColors,mapSettings,appearanceSettings])
  const currentFingerprint=useMemo(()=>JSON.stringify(currentSnapshot),[currentSnapshot])
@@ -191,11 +209,13 @@ function TripEditor({tripRoute,runtimeConfig,auth}:{tripRoute:TripMapRoute;runti
        setTripName(loaded.snapshot.name);setRevision(loaded.revision);setRemoteRevisionAvailable(null)
        setPlaces(hydrated.places);setRegions(restored.regions);setVisits(restored.visits);setBucketItems(restored.bucketItems);setBases(restored.bases);setTransports(restored.transports.map(transport=>refreshMajorTransportPlaceProjection(transport,hydrated.places)));setLabels(restored.labels);setPlans(restored.plans);setTimelineView(restored.timelineView);setDayColors(restored.dayColors);setMapSettings(restored.mapSettings??{...DEFAULT_TRIP_MAP_SETTINGS});setAppearanceSettings(restored.appearanceSettings??{...DEFAULT_TRIP_APPEARANCE})
        setRouteRuntime({});setDraftRouteResult(null);setRoutePreview(null);setRouteCandidates([]);setHistory({undo:[],redo:[]});setLastSavedFingerprint(JSON.stringify(loaded.snapshot))
+       const restoredRoutes=await restoreSavedRoutes(restored.plans,restored.visits,restored.transports,hydrated.places)
+       if(!cancelled)setRouteRuntime(restoredRoutes)
      }catch{}finally{busy=false}
    }
    const timer=window.setInterval(()=>void check(),10000)
    return()=>{cancelled=true;window.clearInterval(timer)}
- },[loadState,revision,dirty,tripRoute.tripId,googleApiKey,providerCache.googlePlacesPositionTtlHours])
+ },[loadState,revision,dirty,tripRoute.tripId,googleApiKey,providerCache.googlePlacesPositionTtlHours,routeCacheTtlHours])
  async function saveTrip(){
    if(revision===null||saving||loadState!=='READY')return
    setSaving(true);setStorageError(null)
@@ -352,7 +372,7 @@ function TripEditor({tripRoute,runtimeConfig,auth}:{tripRoute:TripMapRoute;runti
      user:user.name||user.memo||user.expectedDurationMinutes!==undefined?user:undefined,
      visualColor:draftConnectionColor||undefined,
      segments,
-     routeIntent:auto?{provider:mapProvider.id,mode:draftRouteMode,...(autoPlaceIds.length?{waypointPlaceIds:autoPlaceIds}:{})}:undefined,
+     routeIntent:auto?{provider:mapProvider.id,mode:draftRouteMode,...(freshResult&&draftRouteResult?{option:draftRouteResult.route.id}:currentKey===initialRouteDraftKey&&before?.routeIntent?.option?{option:before.routeIntent.option}:{}),...(autoPlaceIds.length?{waypointPlaceIds:autoPlaceIds}:{})}:undefined,
    }
    // Provider response is committed to SPA runtime only on Save; Cancel must not change an applied route.
    const expectedAutoRequest=expectedRequest
@@ -410,7 +430,20 @@ function TripEditor({tripRoute,runtimeConfig,auth}:{tripRoute:TripMapRoute;runti
    setRouteCandidates([]);setRoutePreview(null);setRouteError(null);setRoutePickerOpen(true)
    if(!request){setRouteError(text.errors.routeCoordinatesRequired);return}
    setRouteLoading(true)
-   const result=await routeRequestGate.run(()=>searchRouteCandidates(mapProvider,request))
+   const result=await routeRequestGate.run(async ()=>{
+     if(routeCacheTtlHours!==0){
+       try{
+         const cached=await readRouteCandidatesCache(tripRoute.tripId,tripRoute.mapProvider,request)
+         if(cached.hit&&Array.isArray(cached.value)&&cached.value.every(route=>route.mode===request.mode))return cached.value
+       }catch(error){console.warn('Route cache lookup failed; requesting provider route instead.',error)}
+     }
+     const routes=await searchRouteCandidates(mapProvider,request)
+     if(routeCacheTtlHours!==0){
+       try{await writeRouteCandidatesCache(tripRoute.tripId,tripRoute.mapProvider,request,routes)}
+       catch(error){console.warn('Route cache write failed; preserving current session route.',error)}
+     }
+     return routes
+   })
    if(result.status==='BUSY'||result.status==='CANCELLED')return
    setRouteLoading(false)
    if(result.status==='FAILED'){setRouteError(routeSearchErrorMessage(result.error));return}
@@ -561,7 +594,7 @@ function TripEditor({tripRoute,runtimeConfig,auth}:{tripRoute:TripMapRoute;runti
  if(freeVisit&&placementTarget){
    bucketReturnPreview={target:placementTarget,title:scheduleName(freeVisit),detail:placementTarget==='BASE'?text.base.returnDetail:freeVisit.detail,planningKind:placementTarget==='PLAN_B'?'NEARBY':'VISIT',...(freeVisit.source?.kind==='BASE'?{baseId:freeVisit.source.baseId}:{}),...(freeVisit.source?.kind==='BUCKET'?{index:freeVisit.source.bucketIndex}:{})}
  }
- const editingRuntimeRoute=editingPair?(()=>{const key=pairKey(editingPair.from,editingPair.to),runtime=draftRouteResult??routeRuntime[key],request=draftConnectionSource==='ROUTE_API'?routeRequestForChoices(editingPair,draftRouteWaypoints,draftRouteMode):savedConnectionRouteRequest(editingPair,places,plans[key]);return runtime&&request&&runtime.requestKey===routeRequestKey(request)?runtime.route:null})():null
+ const editingRuntimeRoute=editingPair?(()=>{const key=pairKey(editingPair.from,editingPair.to),runtime=draftRouteResult??routeRuntime[key],request=draftConnectionSource==='ROUTE_API'?routeRequestForChoices(editingPair,draftRouteWaypoints,draftRouteMode):savedConnectionRouteRequest(editingPair,places,plans[key]);return runtime&&request&&routeRuntimeMatches(runtime,request,plans[key]?.routeIntent?.option)?runtime.route:null})():null
  const currentRouteDraftKey=draftConnectionSource==='ROUTE_API'?routeDraftKey(mapProvider.id,draftRouteMode,draftRouteWaypoints):null
  const routeIntentNeedsConfirmation=draftConnectionSource==='ROUTE_API'&&currentRouteDraftKey!==initialRouteDraftKey
  const currentDraftRequest=editingPair&&draftConnectionSource==='ROUTE_API'?routeRequestForChoices(editingPair,draftRouteWaypoints,draftRouteMode):null

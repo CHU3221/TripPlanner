@@ -74,8 +74,8 @@ export function createTripPlannerServer({tripRepository,authService=null,userRep
       if(url.pathname==='/api/runtime-config'&&req.method==='GET'){
         await requireAuth(req)
         const runtime=configStore?configStore.runtimeConfig():{googleApiKey:'',googleMapId:'',naverClientId:''}
-        let providerCache={googlePlacesPositionTtlHours:0}
-        try{const policy=configStore?.providerCachePolicy();providerCache={googlePlacesPositionTtlHours:policy?.policies?.['GOOGLE.PLACES.POSITION']?.ttlHours??0}}catch{}
+        let providerCache={googlePlacesPositionTtlHours:0,googleRoutesResultTtlHours:0,naverDirectionsResultTtlHours:0}
+        try{const policy=configStore?.providerCachePolicy();providerCache={googlePlacesPositionTtlHours:policy?.policies?.['GOOGLE.PLACES.POSITION']?.ttlHours??0,googleRoutesResultTtlHours:policy?.policies?.['GOOGLE.ROUTES.RESULT']?.ttlHours??0,naverDirectionsResultTtlHours:policy?.policies?.['NAVER.DIRECTIONS5.RESULT']?.ttlHours??0}}catch{}
         return send(res,200,{...runtime,providerCache})
       }
 
@@ -197,7 +197,7 @@ export function createTripPlannerServer({tripRepository,authService=null,userRep
         const actor=await requireTripAccess(req,cacheTripId)
         if(!providerCacheService)return send(res,200,{enabled:false,hit:false})
         const policyKey=url.searchParams.get('policyKey')?.trim()??'',subjectKey=url.searchParams.get('subjectKey')?.trim()??''
-        if(!policyKey||!subjectKey)return send(res,400,{code:'INVALID_CACHE_KEY',message:'policyKey와 subjectKey가 필요합니다.'})
+        if(!policyKey||!subjectKey||subjectKey.length>2048)return send(res,400,{code:'INVALID_CACHE_KEY',message:'policyKey와 subjectKey가 필요합니다.'})
         const provider=policyKey.startsWith('GOOGLE.')?'GOOGLE':policyKey.startsWith('NAVER.')?'NAVER':''
         if(!provider)return send(res,400,{code:'INVALID_CACHE_KEY',message:'지원하지 않는 캐시 정책입니다.'})
         const result=await providerCacheService.get(cacheTripId,{provider,policyKey,subjectKey})
@@ -208,7 +208,7 @@ export function createTripPlannerServer({tripRepository,authService=null,userRep
         await requireTripAccess(req,cacheTripId)
         if(!providerCacheService)return send(res,200,{stored:false,reason:'UNAVAILABLE'})
         const body=await readJson(req),policyKey=String(body.policyKey??''),subjectKey=String(body.subjectKey??''),provider=policyKey.startsWith('GOOGLE.')?'GOOGLE':policyKey.startsWith('NAVER.')?'NAVER':''
-        if(!provider||!subjectKey)return send(res,400,{code:'INVALID_CACHE_KEY',message:'캐시 키가 올바르지 않습니다.'})
+        if(!provider||!subjectKey||subjectKey.length>2048)return send(res,400,{code:'INVALID_CACHE_KEY',message:'캐시 키가 올바르지 않습니다.'})
         return send(res,200,await providerCacheService.put(cacheTripId,{provider,policyKey,subjectKey,value:body.value}))
       }
 

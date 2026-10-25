@@ -1,5 +1,6 @@
 import type { GeoPoint, TripPlace } from './domain/place'
-import type { ConnectionPlan, Node } from './model'
+import type { ConnectionPlan, MajorTransportData, Node, VisitData } from './model'
+import { pairKey } from './model'
 import type { RouteCandidate, RouteRequest } from './map/provider/contract'
 
 /** Runtime-only provider response, never serialized into Trip data or history. */
@@ -37,6 +38,32 @@ export function savedConnectionRouteRequest(
   return { origin, destination, mode: plan?.routeIntent?.mode ?? 'CAR', ...(waypoints.length ? { waypoints } : {}) }
 }
 
-export function routeRuntimeMatches(result: RouteRuntimeResult | undefined, request: RouteRequest) {
-  return !!result && result.requestKey === routeRequestKey(request)
+export function routeRuntimeMatches(result: RouteRuntimeResult | undefined, request: RouteRequest, option?: string) {
+  return !!result && result.requestKey === routeRequestKey(request) && (!option || result.route.id === option)
+}
+
+/** Reconstruct lookup requests from canonical user-owned plans only.
+ * No API is triggered. Old snapshots without option fall back to the first cached candidate.
+ */
+export function savedRouteCacheRequests(
+  plans:Record<string,ConnectionPlan>,visits:readonly VisitData[],transports:readonly MajorTransportData[],places:readonly TripPlace[],provider:'GOOGLE'|'NAVER',
+){
+  const nodes:Node[]=[
+    ...visits.map(v=>({type:'VISIT' as const,id:v.id,key:`VISIT:${v.id}`,start:v.start,end:v.end,entryPlaceId:v.placeId,exitPlaceId:v.placeId,title:v.title??''})),
+    ...transports.map(t=>({type:'TRANSPORT' as const,id:t.id,key:`TRANSPORT:${t.id}`,start:t.occupiedFrom,end:t.occupiedUntil,entryPlaceId:t.departure.placeId,exitPlaceId:t.arrival.placeId,title:t.userTitle??''})),
+  ].sort((a,b)=>a.start-b.start||a.end-b.end||a.key.localeCompare(b.key))
+  const results:{pairId:string;request:RouteRequest;option?:string}[]=[]
+  if(nodes.length<2)return results
+  let from=nodes[0],maxEnd=from.end
+  for(let i=1;i<nodes.length;i++){
+    const to=nodes[i]
+    if(to.start<maxEnd){if(to.end>maxEnd){from=to;maxEnd=to.end}continue}
+    const pairId=pairKey(from,to),plan=plans[pairId]
+    if(plan?.source==='ROUTE_API'&&plan.routeIntent?.provider===provider){
+      const request=savedConnectionRouteRequest({from,to},places,plan)
+      if(request)results.push({pairId,request,option:plan.routeIntent.option})
+    }
+    from=to;maxEnd=to.end
+  }
+  return results
 }

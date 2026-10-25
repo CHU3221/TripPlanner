@@ -6,7 +6,7 @@ import type { ConnectionPlan, MajorTransportData, VisitData } from '../model'
 import { buildMapPathProjection, type MapPathTarget } from '../map/mapConnectionPrimitives'
 import type { MapMarkerPrimitive, MapPoiSelection, MapRenderer, PlaceCandidate, RouteCandidate } from '../map/provider/contract'
 import type { RouteRuntimeResult } from '../connectionRuntime'
-import { routeRequestKey, savedConnectionRouteRequest } from '../connectionRuntime'
+import { routeRuntimeMatches, savedConnectionRouteRequest } from '../connectionRuntime'
 import { connectionWaypointPlaceIds } from '../connectionWaypoints'
 import { appearanceForMarker, appearanceForPath } from '../map/appearanceConfig'
 import { visualColor, type TripAppearanceSettings, type TripDayColors } from '../visual/appearance'
@@ -81,7 +81,7 @@ export function TripMap({renderer,appearanceSettings,places,bucketItems,bases,vi
     const preview=routePreview?.pairId===target.pairId?routePreview.route:null
     const runtimeResult=routeRuntime[target.pairId]
     const request=savedConnectionRouteRequest(target,places,plans[target.pairId])
-    const runtime=plans[target.pairId]?.source==='ROUTE_API'&&runtimeResult&&request&&runtimeResult.requestKey===routeRequestKey(request)?runtimeResult.route:null
+    const runtime=plans[target.pairId]?.source==='ROUTE_API'&&runtimeResult&&request&&routeRuntimeMatches(runtimeResult,request,plans[target.pairId]?.routeIntent?.option)?runtimeResult.route:null
     const route=preview??runtime
     if(!route?.geometry?.length)return sized
     return appearanceForPath({

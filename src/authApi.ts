@@ -1,6 +1,6 @@
 export type UserPermissions={canCreateTrips:boolean}
 export type AuthStatus={authenticated:false}|{authenticated:true;role:'ADMIN'|'USER';username:string;mustChangeAdminPassword?:boolean;mustChangePassword?:boolean;userId?:string;permissions?:UserPermissions}
-export type RuntimeConfig={googleApiKey:string;googleMapId:string;naverClientId:string;providerCache:{googlePlacesPositionTtlHours:number}}
+export type RuntimeConfig={googleApiKey:string;googleMapId:string;naverClientId:string;providerCache:{googlePlacesPositionTtlHours:number;googleRoutesResultTtlHours?:number;naverDirectionsResultTtlHours?:number}}
 export type ManagedUser={id:string;username:string;status:'PENDING'|'ACTIVE'|'DISABLED';mustChangePassword:boolean;permissions:UserPermissions;createdAt:string;updatedAt:string}
 export type TripAccessMode='OPEN'|'RESTRICTED'
 export type TripAccessConfig={accessMode:TripAccessMode;allowedUserIds:string[]}

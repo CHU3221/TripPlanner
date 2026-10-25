@@ -10,12 +10,14 @@ export const LEGAL_PROVIDER_CACHE_CATALOG=Object.freeze({
   'GOOGLE.PLACES.REVIEW':Object.freeze({provider:'GOOGLE',maxTtlHours:-1,crossTripReuse:'ALLOWED',status:'CONSERVATIVE',verifiedAt:'2026-10-20'}),
   'NAVER.LOCAL_SEARCH.RESULT':Object.freeze({provider:'NAVER',maxTtlHours:-1,crossTripReuse:'ALLOWED',status:'UNVERIFIED'}),
   'NAVER.GEOCODING.RESULT':Object.freeze({provider:'NAVER',maxTtlHours:-1,crossTripReuse:'ALLOWED',status:'UNVERIFIED'}),
-  'NAVER.DIRECTIONS5.RESULT':Object.freeze({provider:'NAVER',maxTtlHours:-1,crossTripReuse:'ALLOWED',status:'UNVERIFIED'}),
+  'NAVER.DIRECTIONS5.RESULT':Object.freeze({provider:'NAVER',maxTtlHours:-1,crossTripReuse:'ALLOWED',status:'UNVERIFIED',notes:'Route cache is operator-controlled; default disabled, use only when permitted by provider terms.'}),
+  'GOOGLE.ROUTES.RESULT':Object.freeze({provider:'GOOGLE',maxTtlHours:-1,crossTripReuse:'ALLOWED',status:'UNVERIFIED',notes:'Route cache is operator-controlled and disabled by default. Real Google Maps route data may have storage restrictions; permanent TTL is intended for independently generated mock data only.'}),
 })
 
 const finiteNonNegative=value=>typeof value==='number'&&Number.isFinite(value)&&value>=0
 const validTtl=value=>typeof value==='number'&&Number.isFinite(value)&&(value===-1||value>=0)
 const defaultRetentionHours=legal=>0
+export const isRouteCachePolicy=key=>key==='GOOGLE.ROUTES.RESULT'||key==='NAVER.DIRECTIONS5.RESULT'
 
 export function defaultProviderCacheOperatorConfig(){
   const policies={}
@@ -62,7 +64,9 @@ export function resolveProviderCachePolicyConfig(input){
     if(raw.safetyMarginHours!==undefined&&!finiteNonNegative(raw.safetyMarginHours))throw new Error(`invalid safetyMarginHours for ${key}`)
     const ttlHours=raw.ttlHours
     const safetyMarginHours=ttlHours===-1?0:(raw.safetyMarginHours??input.defaultSafetyMarginHours)
-    const retentionHours=raw.retentionHours??defaultRetentionHours(legal)
+    // A disabled route policy must physically discard old payloads, even if
+    // the prior operator configuration had permanent retention.
+    const retentionHours=isRouteCachePolicy(key)&&ttlHours===0?0:(raw.retentionHours??defaultRetentionHours(legal))
     validateTtl(key,ttlHours,legal)
     validateRetention(key,ttlHours,retentionHours,legal)
     if(ttlHours===-1&&safetyMarginHours!==0)throw new Error(`${key}: permanent ttlHours=-1 requires safetyMarginHours=0`)
@@ -81,6 +85,7 @@ export function operatorConfigFromEffective(effective){
 export function evaluateProviderCacheRecord(record,config,now=Date.now()){
   const policy=config.policies[record.policyKey]
   if(!policy||policy.provider!==record.provider)return {cacheable:false,fresh:false,retained:false,dormant:false,permanent:false,reason:'INVALID'}
+  if(isRouteCachePolicy(record.policyKey)&&policy.ttlHours===0)return {cacheable:false,fresh:false,retained:false,dormant:false,permanent:false,reason:'DISABLED_PURGE'}
   const ageHours=Math.max(0,(now-record.fetchedAtEpochMs)/3600000)
   const permanentRetention=policy.retentionHours===-1
   const retained=permanentRetention||ageHours<policy.retentionHours

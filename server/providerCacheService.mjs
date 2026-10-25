@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { cacheLookupScope, defaultProviderCacheOperatorConfig, evaluateProviderCacheRecord, resolveProviderCachePolicyConfig } from './providerCachePolicy.mjs'
+import { cacheLookupScope, defaultProviderCacheOperatorConfig, evaluateProviderCacheRecord, isRouteCachePolicy, resolveProviderCachePolicyConfig } from './providerCachePolicy.mjs'
 
 const storageSubject=(tripId,subjectKey,scope)=>scope==='GLOBAL'?subjectKey:`trip:${tripId}:${subjectKey}`
 
@@ -41,7 +41,30 @@ export class ProviderCacheService{
   stop(){if(this.timer){clearInterval(this.timer);this.timer=null}}
 }
 
+function validatePoint(point){
+  return !!point&&typeof point==='object'&&!Array.isArray(point)&&Number.isFinite(point.lat)&&Number.isFinite(point.lng)&&Math.abs(point.lat)<=90&&Math.abs(point.lng)<=180
+}
+function validateRouteCacheValue(value){
+  const fail=()=>{throw Object.assign(new Error('경로 캐시 결과가 올바르지 않습니다.'),{statusCode:400})}
+  if(!Array.isArray(value)||value.length>12)return fail()
+  const modes=new Set(['CAR','WALK','TRANSIT']),stepModes=new Set(['WALK','BUS','SUBWAY','TRAIN','OTHER'])
+  for(const route of value){
+    if(!route||typeof route!=='object'||Array.isArray(route)||typeof route.id!=='string'||!route.id||route.id.length>160||!modes.has(route.mode)||!Number.isFinite(route.durationMinutes)||route.durationMinutes<0||route.durationMinutes>100000)return fail()
+    if(route.distanceMeters!==undefined&&(!Number.isFinite(route.distanceMeters)||route.distanceMeters<0))return fail()
+    if(route.summary!==undefined&&(typeof route.summary!=='string'||route.summary.length>2048))return fail()
+    if(route.geometry!==undefined&&(!Array.isArray(route.geometry)||route.geometry.length>10000||!route.geometry.every(validatePoint)))return fail()
+    if(route.transitSteps!==undefined){
+      if(!Array.isArray(route.transitSteps)||route.transitSteps.length>256)return fail()
+      for(const step of route.transitSteps){
+        if(!step||typeof step!=='object'||Array.isArray(step)||!stepModes.has(step.mode))return fail()
+        for(const key of ['instruction','lineName','lineShortName','headsign','vehicleName','departureStop','arrivalStop','departureAt','arrivalAt'])if(step[key]!==undefined&&(typeof step[key]!=='string'||step[key].length>2048))return fail()
+        for(const key of ['durationMinutes','distanceMeters','stopCount'])if(step[key]!==undefined&&(!Number.isFinite(step[key])||step[key]<0))return fail()
+      }
+    }
+  }
+}
 function validateValue(policyKey,value){
+  if(isRouteCachePolicy(policyKey)){validateRouteCacheValue(value);return}
   if(policyKey==='GOOGLE.PLACES.POSITION'){
     if(!value||typeof value!=='object'||!Number.isFinite(value.lat)||!Number.isFinite(value.lng)||Math.abs(value.lat)>90||Math.abs(value.lng)>180)throw Object.assign(new Error('캐시 좌표가 올바르지 않습니다.'),{statusCode:400})
     return

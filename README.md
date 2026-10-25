@@ -417,3 +417,30 @@ curl -I http://127.0.0.1:7603/
 주요 기술 및 서비스: React, TypeScript, Vite, Node.js, Google Maps Platform, NAVER Maps, Google Material Symbols. 각각의 라이브러리와 외부 서비스는 해당 라이선스 및 이용약관을 따릅니다.
 
 프로젝트의 라이선스는 **저장소에 실제로 포함된 `LICENSE` 파일이 있는 경우 해당 내용을 따릅니다.** 라이선스 파일이 없다면 공개 저장소라는 이유만으로 재배포·수정 권한이 자동 부여되지는 않습니다.
+
+
+### 경로 결과 캐시 (옵션)
+
+`GOOGLE.ROUTES.RESULT` 및 `NAVER.DIRECTIONS5.RESULT` 정책은 서버 SQLite를
+사용합니다. 초기 설정은 `ttlHours: 0, retentionHours: 0`이므로 기존처럼 경로
+조회 결과는 현재 브라우저 세션에만 남습니다. 저장한 경로의 ID는 기존
+`ConnectionPlan.routeIntent.option`에 기록되며 지도 데이터 원문은 여행 계획
+스냅샷에 추가되지 않습니다.
+
+관리 페이지나 `config/provider-cache-policy.override.json`에서 캐시 활성화:
+
+```json
+"GOOGLE.ROUTES.RESULT": { "ttlHours": -1, "retentionHours": -1 }
+```
+
+`-1`은 무기한 저장, `0`은 새 저장 차단 및 기존 저장 데이터 삭제,
+양수는 시간 단위 보존입니다. `0`으로 변경한 뒤 관리자 설정의 저장 버튼을
+누르면 SQLite에 남았던 해당 캐시 레코드까지 즉시 정리됩니다.
+경로 조회는 캐시 우선이며, 적중하지 않을 때만 사용자의 명시적 조회 요청으로
+지도 API를 호출합니다. 여행 계획을 다시 열 때는 저장된 사용자 선택 정보로
+캐시를 복원하며, **캐시 실패 시 지도 API를 자동으로 호출하지 않습니다.**
+
+주의: 실제 Google/NAVER 경로 응답은 각 공급자의 저장 제한을 준수해야 합니다.
+경로 캐시는 기본 비활성화되어 있으며 영구 보관은 자체 제작 Mock 데이터 또는
+해당 저장이 허용되는 응답에만 적용해야 합니다. Mock과 실제 API 결과를
+동일한 캐시 공간에서 사용하지 마세요.
