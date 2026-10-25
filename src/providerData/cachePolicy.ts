@@ -44,7 +44,7 @@ export type ProviderCacheLookupScope='TRIP'|'GLOBAL'
 const HOUR_MS=3600000
 const finiteNonNegative=(value:unknown):value is number=>typeof value==='number'&&Number.isFinite(value)&&value>=0
 const validTtl=(value:unknown):value is number=>typeof value==='number'&&Number.isFinite(value)&&(value===-1||value>=0)
-const defaultRetention=(legal:ProviderCacheLegalPolicyEntry)=>legal.maxTtlHours===-1?-1:Math.max(0,legal.maxTtlHours)
+const defaultRetention=(legal:ProviderCacheLegalPolicyEntry)=>0
 
 function validateTtl(key:string,ttl:number,legal:ProviderCacheLegalPolicyEntry){
   if(legal.maxTtlHours===0&&ttl!==0)throw new Error(`${key}: operator cannot enable storage; developer legal ceiling is 0`)

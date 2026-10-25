@@ -63,7 +63,7 @@ export class ServerConfigStore{
     const overridePath=this.cacheOverridePath(),exists=existsSync(overridePath)
     try{
       const effective=this.providerCachePolicy()
-      return {runtimeWiring:'ENABLED',overridePath,overrideExists:exists,operatorConfig:operatorConfigFromEffective(effective),error:null,note:'Provider cache runtime이 서버 SQLite와 연결되어 있습니다. 각 정책은 표시된 최대 TTL을 초과할 수 없습니다.',...publicCachePolicyStatus(effective)}
+      return {runtimeWiring:'ENABLED',overridePath,overrideExists:exists,operatorConfig:operatorConfigFromEffective(effective),error:null,note:'Provider cache runtime이 서버 SQLite와 연결되어 있습니다. TTL과 보존 기간은 서버 운영자가 결정하며 공급자 약관 준수 책임은 운영자에게 있습니다.',...publicCachePolicyStatus(effective)}
     }catch(e){
       const fallback=resolveProviderCachePolicyConfig(defaultProviderCacheOperatorConfig())
       return {runtimeWiring:'ERROR',overridePath,overrideExists:exists,operatorConfig:operatorConfigFromEffective(fallback),error:e instanceof Error?e.message:String(e),note:'캐시 설정 오류로 runtime cache가 fail-closed 상태입니다. Management에는 복구용 기본값을 표시합니다.',...publicCachePolicyStatus(fallback)}

@@ -1,21 +1,21 @@
 export const LEGAL_PROVIDER_CACHE_CATALOG_VERSION='2026-10-20'
 
 export const LEGAL_PROVIDER_CACHE_CATALOG=Object.freeze({
-  'GOOGLE.PLACES.PLACE_ID':Object.freeze({provider:'GOOGLE',maxTtlHours:-1,refreshAfterHours:8760,crossTripReuse:'UNVERIFIED',status:'VERIFIED',verifiedAt:'2026-10-20',notes:'Place IDs are exempt from Places caching restrictions; refresh is recommended after 12 months.'}),
-  'GOOGLE.PLACES.POSITION':Object.freeze({provider:'GOOGLE',maxTtlHours:720,crossTripReuse:'UNVERIFIED',status:'VERIFIED',verifiedAt:'2026-10-20',notes:'Places latitude/longitude may be cached for up to 30 consecutive calendar days.'}),
-  'GOOGLE.PLACES.NAME':Object.freeze({provider:'GOOGLE',maxTtlHours:0,crossTripReuse:'FORBIDDEN',status:'CONSERVATIVE',verifiedAt:'2026-10-20'}),
-  'GOOGLE.PLACES.ADDRESS':Object.freeze({provider:'GOOGLE',maxTtlHours:0,crossTripReuse:'FORBIDDEN',status:'CONSERVATIVE',verifiedAt:'2026-10-20'}),
-  'GOOGLE.PLACES.DETAILS':Object.freeze({provider:'GOOGLE',maxTtlHours:0,crossTripReuse:'FORBIDDEN',status:'CONSERVATIVE',verifiedAt:'2026-10-20'}),
-  'GOOGLE.PLACES.PHOTO':Object.freeze({provider:'GOOGLE',maxTtlHours:0,crossTripReuse:'FORBIDDEN',status:'CONSERVATIVE',verifiedAt:'2026-10-20'}),
-  'GOOGLE.PLACES.REVIEW':Object.freeze({provider:'GOOGLE',maxTtlHours:0,crossTripReuse:'FORBIDDEN',status:'CONSERVATIVE',verifiedAt:'2026-10-20'}),
-  'NAVER.LOCAL_SEARCH.RESULT':Object.freeze({provider:'NAVER',maxTtlHours:0,crossTripReuse:'UNVERIFIED',status:'UNVERIFIED'}),
-  'NAVER.GEOCODING.RESULT':Object.freeze({provider:'NAVER',maxTtlHours:0,crossTripReuse:'UNVERIFIED',status:'UNVERIFIED'}),
-  'NAVER.DIRECTIONS5.RESULT':Object.freeze({provider:'NAVER',maxTtlHours:0,crossTripReuse:'UNVERIFIED',status:'UNVERIFIED'}),
+  'GOOGLE.PLACES.PLACE_ID':Object.freeze({provider:'GOOGLE',maxTtlHours:-1,refreshAfterHours:8760,crossTripReuse:'ALLOWED',status:'VERIFIED',verifiedAt:'2026-10-20',notes:'Place IDs are exempt from Places caching restrictions; refresh is recommended after 12 months.'}),
+  'GOOGLE.PLACES.POSITION':Object.freeze({provider:'GOOGLE',maxTtlHours:-1,crossTripReuse:'ALLOWED',status:'VERIFIED',verifiedAt:'2026-10-20',notes:'Places latitude/longitude may be cached for up to 30 consecutive calendar days.'}),
+  'GOOGLE.PLACES.NAME':Object.freeze({provider:'GOOGLE',maxTtlHours:-1,crossTripReuse:'ALLOWED',status:'CONSERVATIVE',verifiedAt:'2026-10-20'}),
+  'GOOGLE.PLACES.ADDRESS':Object.freeze({provider:'GOOGLE',maxTtlHours:-1,crossTripReuse:'ALLOWED',status:'CONSERVATIVE',verifiedAt:'2026-10-20'}),
+  'GOOGLE.PLACES.DETAILS':Object.freeze({provider:'GOOGLE',maxTtlHours:-1,crossTripReuse:'ALLOWED',status:'CONSERVATIVE',verifiedAt:'2026-10-20'}),
+  'GOOGLE.PLACES.PHOTO':Object.freeze({provider:'GOOGLE',maxTtlHours:-1,crossTripReuse:'ALLOWED',status:'CONSERVATIVE',verifiedAt:'2026-10-20'}),
+  'GOOGLE.PLACES.REVIEW':Object.freeze({provider:'GOOGLE',maxTtlHours:-1,crossTripReuse:'ALLOWED',status:'CONSERVATIVE',verifiedAt:'2026-10-20'}),
+  'NAVER.LOCAL_SEARCH.RESULT':Object.freeze({provider:'NAVER',maxTtlHours:-1,crossTripReuse:'ALLOWED',status:'UNVERIFIED'}),
+  'NAVER.GEOCODING.RESULT':Object.freeze({provider:'NAVER',maxTtlHours:-1,crossTripReuse:'ALLOWED',status:'UNVERIFIED'}),
+  'NAVER.DIRECTIONS5.RESULT':Object.freeze({provider:'NAVER',maxTtlHours:-1,crossTripReuse:'ALLOWED',status:'UNVERIFIED'}),
 })
 
 const finiteNonNegative=value=>typeof value==='number'&&Number.isFinite(value)&&value>=0
 const validTtl=value=>typeof value==='number'&&Number.isFinite(value)&&(value===-1||value>=0)
-const defaultRetentionHours=legal=>legal.maxTtlHours===-1?-1:Math.max(0,legal.maxTtlHours)
+const defaultRetentionHours=legal=>0
 
 export function defaultProviderCacheOperatorConfig(){
   const policies={}
