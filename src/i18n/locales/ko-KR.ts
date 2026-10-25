@@ -460,8 +460,8 @@ export const koKR={
   sidebar:{
     bucket:'여행 보관함',
     bucketHelp:'아직 일정표에 배치하지 않은 일정입니다.',
-    bucketSection:'일정 후보',
-    bucketSectionHelp:'원하는 시간으로 끌어 놓아 배치할 수 있습니다.',
+    bucketSection:'일정',
+    bucketSectionHelp:'주요 일정 목록',
     empty:'대기 중인 일정이 없습니다.',
 
     planB:'PLAN B',
